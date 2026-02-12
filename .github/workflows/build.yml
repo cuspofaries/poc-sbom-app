@@ -1,0 +1,64 @@
+# =============================================================================
+# Build & SBOM Pipeline
+# =============================================================================
+# Builds the image, pushes to GHCR, then calls the reusable SBOM pipeline
+# from poc-sbom. Zero SBOM logic in this repo.
+# =============================================================================
+
+name: Build & SBOM
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: poc-sbom-build
+  REGISTRY: ghcr.io/${{ github.repository_owner }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image metadata
+        id: meta
+        run: |
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          push: true
+          tags: ${{ steps.meta.outputs.image }}
+
+  sbom:
+    needs: build
+    uses: cuspofaries/poc-sbom/.github/workflows/sbom-reusable.yml@main
+    with:
+      image: ${{ needs.build.outputs.image }}
+      image-name: poc-sbom-build
+    secrets:
+      DTRACK_API_KEY: ${{ secrets.DTRACK_API_KEY }}
+      registry-token: ${{ secrets.GITHUB_TOKEN }}
