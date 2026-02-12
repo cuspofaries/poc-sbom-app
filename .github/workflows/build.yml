@@ -59,6 +59,7 @@ jobs:
     with:
       image: ${{ needs.build.outputs.image }}
       image-name: poc-sbom-build
+      dtrack-hostname: dep-api.anthonymacle.com
     secrets:
       DTRACK_API_KEY: ${{ secrets.DTRACK_API_KEY }}
-      registry-token: ${{ secrets.GITHUB_TOKEN }}
+      REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
