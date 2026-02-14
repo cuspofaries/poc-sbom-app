@@ -2,9 +2,8 @@
 # Supply Chain Pipeline
 # =============================================================================
 # Zero build, signing, or SBOM logic in this repo.
-# Everything is delegated to reusable workflows:
-#   1. poc-build-sign: build → push → cosign sign (provenance)
-#   2. poc-sbom:       cosign verify → SBOM → attest → scan → policy
+# Everything is delegated to a single reusable workflow from sdlc.
+# Shift-left: image is scanned BEFORE being pushed to the registry.
 # =============================================================================
 
 name: Supply Chain Pipeline
@@ -23,21 +22,12 @@ permissions:
 
 jobs:
 
-  build:
-    uses: cuspofaries/poc-build-sign/.github/workflows/build-sign-reusable.yml@main
+  supply-chain:
+    uses: cuspofaries/sdlc/.github/workflows/supply-chain-reusable.yml@main
     with:
       context: ./app
       image-name: poc-sbom-build
-    secrets:
-      REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  sbom:
-    needs: build
-    uses: cuspofaries/poc-sbom/.github/workflows/sbom-reusable.yml@main
-    with:
-      image: ${{ needs.build.outputs.image }}
-      image-name: poc-sbom-build
       dtrack-hostname: dep-api.anthonymacle.com
     secrets:
-      DTRACK_API_KEY: ${{ secrets.DTRACK_API_KEY }}
       REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DTRACK_API_KEY: ${{ secrets.DTRACK_API_KEY }}
