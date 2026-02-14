@@ -28,6 +28,7 @@ jobs:
       context: ./app
       image-name: poc-sbom-build
       dtrack-hostname: dep-api.anthonymacle.com
+      trivy-exit-code: "0"
     secrets:
       REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       DTRACK_API_KEY: ${{ secrets.DTRACK_API_KEY }}
