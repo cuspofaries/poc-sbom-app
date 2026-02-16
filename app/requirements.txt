@@ -2,3 +2,9 @@ flask==3.0.0
 requests==2.31.0
 pyyaml==6.0.1
 gunicorn==21.2.0
+
+# --- Deliberately vulnerable versions for DTrack/SBOM demo ---
+jinja2==3.1.2          # CVE-2024-22195, CVE-2024-34064 (XSS)
+pillow==9.5.0          # CVE-2023-44271, CVE-2024-28219 (heap overflow)
+cryptography==41.0.4   # CVE-2023-49083, CVE-2024-26130 (NULL dereference, PKCS12 crash)
+aiohttp==3.9.1         # CVE-2024-23334 (path traversal), CVE-2024-23829 (request smuggling)
